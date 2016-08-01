@@ -59,35 +59,27 @@ def latex_subsection(section):
     return string
 
 
-def latex_course(course, f):
-    # Append title
-    f.write('\\subsection{' + course["title"] + '}\n')
-    # Append info section
-    f.write(latex_info(course['session']))
-    f.write(latex_info(course['school']))
-    f.write(latex_info(course['credits']))
-    f.write(latex_info(course['level']))
-    f.write(latex_info(course['offered']))
-    f.write(latex_info(course['visiting_students']))
-    f.write(latex_info(course['erasmus_students']))
+def latex_course(course):
+    basic_info_list = ['session', 'school', 'credits', 'level', 'offered', 'visiting_students', 'erasmus_students']
+    generic_subsection_list = ['description', 'timetable', 'requirements_of_entry', 'excluded_courses', 'co_requisites',
+                               'assessment_weighting']
+    string = '\\subsection{' + course["title"] + '}\n'
+    for info in basic_info_list:
+        string += latex_info(course[info])
+    for subsection in generic_subsection_list:
+        string += latex_subsection(subsection)
 
-    f.write(latex_subsection(course['description']))
-    f.write(latex_subsection(course['timetable']))
-    f.write(latex_subsection(course['requirements_of_entry']))
-    f.write(latex_subsection(course['excluded_courses']))
-    f.write(latex_subsection(course['co_requisites']))
-    f.write(latex_subsection(course['assessment_weighting']))
-    f.write('\\break \\textbf{'+course['assessment_date']['heading']+'}'+course['assessment_date']['value']+'\n')
-    f.write(latex_subsection(course['aims']))
+    string += '\\break \\textbf{'+course['assessment_date']['heading']+'}'+course['assessment_date']['value']+'\n'
+    string += latex_subsection(course['aims'])
 
-    f.write('\\subsubsection*{' + course['learning_outcomes']['heading'] + '}\n')
+    string += '\\subsubsection*{' + course['learning_outcomes']['heading'] + '}\n'
     outcome_list = re.split('\d+\. ', course['learning_outcomes']['value'])
-    f.write(outcome_list[0] + '\n')
-    f.write('\\begin{enumerate}\n')
+    string += outcome_list[0] + '\n'
+    string += '\\begin{enumerate}\n'
     for i in outcome_list[1:-1]:
-        f.write('\\item ' + i + '\n')
-    f.write('\\end{enumerate}\n')
-    return None
+        string += '\\item ' + i + '\n'
+    string += '\\end{enumerate}\n'
+    return string
 
 
 def create_latex(codelist):
@@ -114,13 +106,13 @@ def create_latex(codelist):
                 sem2_courses.append(course)
         f.write('\\section{Semester 1 and 2 Courses}\n')
         for course in all_courses:
-            latex_course(course, f)
+            f.write(latex_course(course, f))
         f.write('\\section{Semester 1 Only Courses}\n')
         for course in sem1_courses:
-            latex_course(course, f)
+            f.write(latex_course(course, f))
         f.write('\\section{Semester 2 Only Courses}\n')
         for course in sem2_courses:
-            latex_course(course, f)
+            f.write(latex_course(course, f))
         f.write('\\end{document}')
     return None
 
