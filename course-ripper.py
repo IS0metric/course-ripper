@@ -67,7 +67,7 @@ def latex_course(course):
     for info in basic_info_list:
         string += latex_info(course[info])
     for subsection in generic_subsection_list:
-        string += latex_subsection(subsection)
+        string += latex_subsection(course[subsection])
 
     string += '\\break \\textbf{'+course['assessment_date']['heading']+'}'+course['assessment_date']['value']+'\n'
     string += latex_subsection(course['aims'])
@@ -86,7 +86,7 @@ def create_latex(codelist):
     with open('courses.tex', 'w') as f:
         f.write('\\documentclass{hitec}\n')
         f.write('\\usepackage[document]{ragged2e}\n')
-        f.write('\\setcounter{tocdepth}{2}\n')
+        f.write('\\setcounter{tocdepth}{4}\n')
         f.write('\\begin{document}\n')
         f.write('\\title{Fourth Year (2016-17) Courses}\n')
         f.write('\\author{Jack Parkinson}\n')
@@ -106,14 +106,31 @@ def create_latex(codelist):
                 sem2_courses.append(course)
         f.write('\\section{Semester 1 and 2 Courses}\n')
         for course in all_courses:
-            f.write(latex_course(course, f))
+            f.write(latex_course(course))
         f.write('\\section{Semester 1 Only Courses}\n')
         for course in sem1_courses:
-            f.write(latex_course(course, f))
+            f.write(latex_course(course))
         f.write('\\section{Semester 2 Only Courses}\n')
         for course in sem2_courses:
-            f.write(latex_course(course, f))
+            f.write(latex_course(course))
         f.write('\\end{document}')
+    return None
+
+
+def tex_only():
+    unwantedcourses = ['COMPSCI4010', 'COMPSCI4009', 'COMPSCI4013',
+                       'COMPSCI4024P', 'COMPSCI4014', 'COMPSCI4012',
+                       'COMPSCI4011', 'COMPSCI4038', 'COMPSCI4015',
+                       'COMPSCI4016', 'COMPSCI4046', 'COMPSCI4047',
+                       'COMPSCI4044', 'COMPSCI4070']
+    page = requests.get('http://gla.ac.uk/coursecatalogue/courselist/?code=REG30200000&name=School+of+Computing+Science')
+    tree = html.fromstring(page.content)
+    spans = tree.xpath('//span/text()')
+    codes = []
+    for span in spans:
+        if span[0:4] == "COMP" and span[7] == '4' and span not in unwantedcourses:
+            codes.append(span)
+    create_latex(codes)
     return None
 
 
@@ -136,4 +153,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    tex_only()
