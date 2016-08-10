@@ -3,6 +3,7 @@ from lxml import html
 import subprocess
 import os
 import re
+from bs4 import BeautifulSoup
 
 
 def get_coursepage(code):
@@ -152,5 +153,49 @@ def main():
     return None
 
 
+def get_info_list(info_string, course):
+    info_list = []
+    split_on_newline = info_string.split("\n")
+    for elem in split_on_newline:
+        split = elem.split(": ")
+        for s in split:
+            info_list.append(s)
+    info_list = info_list[1:-1]
+    info_tags = ['session', 'school', 'credits', 'level', 'offered',
+                 'visiting_students', 'erasmus_students']
+    i = 0
+    for info_tag in info_tags:
+        course[info_tag] = {
+            'heading': info_list[i],
+            'value': info_list[i+1],
+        }
+    return course
+
+
+def bsoup():
+    coursepage = get_coursepage('COMPSCI4002')
+    soup = BeautifulSoup(coursepage.content, 'lxml')
+    h1 = soup.find_all('h1')[2]
+    footer = soup.find(id='pageFooter')
+    html = h1.find_next_siblings()
+    all_strings = [h1.string]
+    for div in html:
+        try:
+            text = div.get_text()
+        except:
+            text = div.string
+        if text is not None:
+            all_strings.append(text)
+    course = {'title': all_strings[0]}
+    course = get_info_list(all_strings[1], course)
+    course['description'] = {
+        'heading': all_strings[2],
+        'value': all_strings[3]
+    }
+    print course
+    print all_strings[4:]
+
+
+
 if __name__ == "__main__":
-    tex_only()
+    bsoup()
