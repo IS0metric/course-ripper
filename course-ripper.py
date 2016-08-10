@@ -6,6 +6,44 @@ import re
 from bs4 import BeautifulSoup
 
 
+'''
+ideas: change the course data structure toa a list of dictionaries. Then each
+dictionary has a 's_type' (section type: just using 'type' is illadvised
+because it is built in to Python) key-value pair and the TeX creator will know
+how to treat them based on that type
+
+course = [
+    {
+        s_type: 'title',
+        value: 'The Course Title',
+    },
+    {
+        s_type: 'section',
+        heading: 'A Basic Section',
+        value: 'Some text for the section.',
+    },
+    {
+        s_type: 'section_aims',
+        heading: 'Course Aims',
+        value: [
+            'An aim',
+            'Another aim',
+            'One more aim',
+        ],
+    }
+    {
+        s_type: 'info',
+        heading: 'An Info Heading'
+        value: 'The info'
+    }
+]
+Problems this solves:
+    + no need for weird counting in parsing the BSoup
+Problems it causes:
+    - need to figure out how to determine what type data is as it is read in
+'''
+
+
 def get_coursepage(code):
     """Given a course code, requests the correspnding course page"""
     url = 'http://gla.ac.uk/coursecatalogue/course/?code=' + code
@@ -130,8 +168,8 @@ def write_to_latex(codelist, unwanted_courses):
         have removed several courses from this selection. The following\
         courses have been omitted:"
     abstract02 = "For more insight into the project, to report issues or to\
-        have a look at the code, have a look at the\
-        \\href{https://github.com/IS0metric/course-ripper}{GitHub}."
+        inspect the code, have a look at the GitHub:\
+        \\url{https://github.com/IS0metric/course-ripper}"
     unincluded = create_not_included_list(unwanted_courses)
     with open('courses.tex', 'w') as f:
         # TODO Try and move all this to a separate function?
@@ -139,8 +177,8 @@ def write_to_latex(codelist, unwanted_courses):
         # to file
         f.write('\\documentclass{hitec}\n')
         f.write('\\usepackage[document]{ragged2e}\n')
+        f.write('\\usepackage{url}\n')
         f.write('\\usepackage{hyperref}\n')
-        f.write('\\usepackage{href}\n')
         f.write('\\setcounter{tocdepth}{4}\n')
         f.write('\\begin{document}\n')
         f.write('\\title{Fourth Year (2016-17) Courses}\n')
